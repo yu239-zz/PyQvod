@@ -1,0 +1,12 @@
+#anaDiv {z-index:9999;border:solid 2px blue;padding:5px 5px;width:400px;min-height:100px;}
+#outDiv {padding:3px 5px;background:white;min-height:100px;}
+#anaText {margin-top:5px;text-align:left;color:blue;font-size:14px;line-height:18px;min-height:60px;}
+#bottomDiv {margin-top:5px;margin-bottom:5px;font-size:18px;text-align: center;}
+#bottomDiv input {
+font-size:90%;
+background-color: #E0EAF1;
+border-bottom: 1px solid #3E6D8E;
+border-right: 1px solid #7F9FB6;
+padding: 5px 4px 3px 4px;
+margin-right: 5px;
+}
