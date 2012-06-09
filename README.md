@@ -28,7 +28,7 @@ These two plubins are downloaded and modified from this link:
 http://code.google.com/p/debbuilder-cn/downloads/list
 
 
-1. Run standalone executable
+1> Run standalone executable
 
 You can place the directory 'executable' anywhere, as long as that you don't change the structure inside the directory. You need first to modify the configure file 'config', then cd into 'standalone' and run 'PyQvod' or simply double-click on the 'PyQvod'. Here is a trick: you could set an alias for the executable. Open the '~/.bashrc' file and add a line as follows: 
 
@@ -38,7 +38,7 @@ Save the file and you can type command 'qvod' in a new terminal to launch the do
 
 NOTE: This method may have errors if your system glib version is incompatible with the executable. I provide two versions and hopefully they can satisfy most 'not-so-old' linux systems. If there is still any graphical problem, you may want to run the code.
 
-2. Run through code
+2> Run through code
 
 This wrapper is written in Python with wxPython library, which means that you don't have to compile the code but just interpret the code. Most linux systems come with Python installed, and it's best that you can make sure your Python version is 2.6 or 2.7. 
 
