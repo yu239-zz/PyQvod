@@ -156,7 +156,7 @@ def download(qvod_url, kill_queue = None, frename = ''):
     if frename == '': 
         frename = movie.replace('.' + suffix, '')
     else: 
-        frename = frename.replace('.' + suffix, '')
+        frename = frename.replace('.' + suffix, '').replace(' ', '\ ')  # escape ' ' for cmd
     
     frename = frename.decode('utf-8')
     cache_dir = cache_path + '/' + frename
