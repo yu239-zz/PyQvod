@@ -133,6 +133,9 @@ def report(string, code):
         print >> sys.stderr, string
     else:
         print string
+
+def donotescapespace(string):
+    return string.replace('\ ', ' ')
         
 def download(qvod_url, kill_queue = None, frename = ''):
     # Check whether the url is a valid QVOD url
@@ -149,6 +152,7 @@ def download(qvod_url, kill_queue = None, frename = ''):
     if not conf: return False
 
     movie_length, hash_code, movie = trunks
+    movie = movie.replace(' ', '\ ')
     movie_length = int(re.search('[0-9]+$', movie_length).group())
     video_path, cache_path, timeout = [conf['VIDEO_PATH'], conf['CACHE_PATH'], conf['TIMEOUT']]
     suffix = re.search('avi|wmv|flv|mkv|mov|mp4|mpg|vob|rmvb|rm', movie, re.IGNORECASE).group()
@@ -156,26 +160,26 @@ def download(qvod_url, kill_queue = None, frename = ''):
     if frename == '': 
         frename = movie.replace('.' + suffix, '')
     else: 
-        frename = frename.replace('.' + suffix, '').replace(' ', '\ ')  # escape ' ' for cmd
+        frename = frename.replace('.' + suffix, '').replace(' ', '\ ')
     
     frename = frename.decode('utf-8')
     cache_dir = cache_path + '/' + frename
     
-    if not os.path.isdir(cache_dir):
+    if not os.path.isdir(donotescapespace(cache_dir)):
         ret = os.system('mkdir ' + cache_dir + ' 2> /dev/null')
         if ret != 0:
-            report(cache_dir + \
-                   'Permission denied for this cache directory.\n' + \
-                   'Make sure you have the right permission.', 0)
+            report(cache_dir + '\n' + \
+                   'Permission denied for this cache directory.\n', 0)
             report('Not Started', thread.get_ident())
             return False
         
     # Copy the downloader to the cache dir and rename it
     exe = hash_code + '+' + movie + '_' + hash_code + '.exe'
     os.system('cp ' + _EXE_ + ' ' + cache_dir + '/' + exe)
+
     # Start downloading!
     #print 'Start downloading ...'
-    p_downloader = subprocess.Popen(['wine', cache_dir + '/' + exe], 
+    p_downloader = subprocess.Popen(['wine', donotescapespace(cache_dir + '/' + exe)], 
                                       stdout=subprocess.PIPE, 
                                       stderr=subprocess.PIPE)
 
@@ -203,13 +207,14 @@ def download(qvod_url, kill_queue = None, frename = ''):
             break
 
         # Not started yet
-        if not os.path.isfile(cache_dir + '/' + cache) and not os.path.isfile(cache_dir + '/' + complete):
+        if not os.path.isfile(donotescapespace(cache_dir + '/' + cache)) \
+                and not os.path.isfile(donotescapespace(cache_dir + '/' + complete)):
             progress = 0.00
             speed = 0.00
         else:
             # Check whether the download has completed
             # The .!qd file should be replaced by the actual video file now
-            if os.path.isfile(cache_dir + '/' + complete):
+            if os.path.isfile(donotescapespace(cache_dir + '/' + complete)):
                 p_downloader.terminate()
                 if os.system('mv ' + cache_dir + '/' + complete + ' ' + video_path + '/' + frename + '.' + suffix) == 0:
                     os.system('rm -rf ' + cache_dir)
