@@ -293,5 +293,5 @@ class MainFrame(wx.Frame):
 if __name__ == '__main__':
     # Create a new app, and start the main loop
     app = wx.App(False)  
-    MainFrame("PyQvod_v0.5\t\t\t Qvod for linux!")
+    MainFrame("PyQvod_v1.0\t\t\t Qvod for linux!")
     app.MainLoop()
