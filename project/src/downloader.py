@@ -37,7 +37,7 @@ def read_config():
     # Convert the list pairs to a dictionary
     conf = dict([(pair[0], pair[1]) for pair in line_pairs])
     # Check the value for each item
-    entries = ['VIDEO_PATH', 'CACHE_PATH', 'TIMEOUT']
+    entries = ['VIDEO_PATH', 'CACHE_PATH', 'TIMEOUT', 'RECORD']
     for key in conf:
         if not key in entries:
             report('Some entry in the configuration file has been changed!\n' + \
@@ -69,7 +69,18 @@ def read_config():
                 p = os.popen('ls -l ' + conf[key])
                 cache_disk_used = int(re.search('[0-9]+', p.readline()).group()) / 1024
                 p.close()
-            
+                
+        if 'RECORD' in key:
+            conf[key] = conf[key].replace('~', _HOME_)
+            if not os.path.isfile(conf[key]):
+                ret = os.system('touch ' + conf[key] + ' 2> /dev/null')
+                if ret != 0:
+                    report(conf[key] + '\n' + \
+                               'File does not exist and cannot create.\n' + \
+                               'Please check the permission and path!', 0)
+                    report('Not Started', thread.get_ident())
+                    return False
+
         if 'TIMEOUT' in key:
             if re.match('[0-9]+$', conf[key]) == None:
                 report('TIMEOUT =' + conf[key] + '\n' + \
@@ -104,8 +115,9 @@ def read_config():
         wine_ver = 'unknown'
     report('*Wine version on your system: ' + wine_ver + '*\n' + \
            '*Downloaded: ' + video_number + \
-           ' videos with ' + str(video_disk_used) + 'MB in total, ' + \
-           'cache file size: ' + str(cache_disk_used) + 'MB*', 0)
+           ' videos with ' + str(video_disk_used) + 'MB in total.*', \
+           # 'cache file size: ' + str(cache_disk_used) + 'MB*', \
+               0)
     return conf
 
 def valid_url(qvod_url):
@@ -150,17 +162,25 @@ def download(qvod_url, kill_queue = None, frename = ''):
     # If valid, read the configure file
     conf = read_config()
     if not conf: return False
+    
+    video_path, cache_path, timeout, record_path = \
+        [conf['VIDEO_PATH'], conf['CACHE_PATH'], conf['TIMEOUT'], conf['RECORD']]
+    ## Write the valid URL into record file
+    with open(record_path, "a") as record:
+        record.write(qvod_url+"\n")
+    record.close()
 
     movie_length, hash_code, movie = trunks
-    movie = movie.replace(' ', '\ ')
-    movie_length = int(re.search('[0-9]+$', movie_length).group())
-    video_path, cache_path, timeout = [conf['VIDEO_PATH'], conf['CACHE_PATH'], conf['TIMEOUT']]
+    movie = movie.replace(' ', '\ ').replace('(', '\(').replace(')', '\)')
+    ## This may not be true! Sometimes the movie id is given in this field
+    ## movie_length = int(re.search('[0-9]+$', movie_length).group())
+    movie_length = -1
     suffix = re.search('avi|wmv|flv|mkv|mov|mp4|mpg|vob|rmvb|rm', movie, re.IGNORECASE).group()
     # Initialize the cache directory
     if frename == '': 
         frename = movie.replace('.' + suffix, '')
     else: 
-        frename = frename.replace('.' + suffix, '').replace(' ', '\ ')
+        frename = frename.replace('.' + suffix, '').replace(' ', '\ ').replace('(', '\(').replace(')', '\)')
     
     frename = frename.decode('utf-8')
     cache_dir = cache_path + '/' + frename
@@ -172,7 +192,7 @@ def download(qvod_url, kill_queue = None, frename = ''):
                    'Permission denied for this cache directory.\n', 0)
             report('Not Started', thread.get_ident())
             return False
-        
+    
     # Copy the downloader to the cache dir and rename it
     exe = hash_code + '+' + movie + '_' + hash_code + '.exe'
     os.system('cp ' + _EXE_ + ' ' + cache_dir + '/' + exe)
@@ -194,8 +214,16 @@ def download(qvod_url, kill_queue = None, frename = ''):
     while True:       
         # Check whether the kill_queue has a kill command
         if kill_queue and not kill_queue.empty():
-            p_downloader.terminate()
-            os.system('rm -rf ' + cache_dir)
+            cmd = kill_queue.get()
+            if cmd != -2:
+                p_downloader.terminate()
+            if cmd == 0:
+                os.system('rm -rf ' + cache_dir)
+            if cmd == -2:
+                ## Start a new process for playing the video
+                subprocess.Popen(['mplayer', cache_dir + '/' + cache],
+                                      stdout=subprocess.PIPE, 
+                                      stderr=subprocess.PIPE)
             return True
 
         # Check whether the connection is timeout
@@ -224,7 +252,12 @@ def download(qvod_url, kill_queue = None, frename = ''):
                 b_succeed = True
                 break
             
-            # Read the current length of t >he cache file
+            if movie_length == -1:
+                ## Calculate the total movie length
+                p = os.popen('ls -l ' + cache_dir + '/' + cache)
+                movie_length = int(p.readline().strip().split(' ')[4]) # in Bytes
+                p.close()
+            # Read the current length of the cache file
             p = os.popen('du ' + cache_dir + '/' + cache)
             cur_length = int(p.readline().strip().split('\t')[0]) * 1024  # in Bytes
             p.close()

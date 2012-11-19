@@ -23,10 +23,11 @@ _ID_BTN_ADD_ = wx.NewId()
 _ID_BTN_DELETE_ = wx.NewId()
 _ID_BTN_START_ = wx.NewId()
 _ID_BTN_EXIT_ = wx.NewId()
+_ID_BTN_PLAY_ = wx.NewId()
 _ID_BTN_CONFIG_ = wx.NewId()
 _ID_BTN_VIDEO_ = wx.NewId()
 _ID_BTN_LICENSE_ = wx.NewId()
-_ID_BTN_STOP_ = wx.NewId()
+_ID_BTN_PAUSE_ = wx.NewId()
 _ID_BTN_DELETEALL_ = wx.NewId()
 
 _LICENSE_ = 'This software is under MIT license,\n' + \
@@ -113,7 +114,7 @@ class MainFrame(wx.Frame):
         # Create a noneditable text control to display Qvod URL
         rt_url = wx.Rect(delta, delta, self.width-2*delta, 20)
         self.tc_url = wx.TextCtrl(panel, pos=rt_url.GetPosition(), size=rt_url.GetSize(), 
-                             style=wx.BORDER_NONE|wx.TE_READONLY|wx.TE_DONTWRAP)
+                             style=wx.BORDER_NONE|wx.TE_DONTWRAP)
         self.tc_url.WriteText('qvod://108941476|E756EFBB467FFD37A36225B180CF29F1BE8BEAB0|[www.qvod123.com]名侦探柯南_662.rmvb|')
         
         # Add a download manager
@@ -133,12 +134,12 @@ class MainFrame(wx.Frame):
                                 id=_ID_BTN_START_, label='Start')
         self.bn_start.Bind(wx.EVT_BUTTON, self.OnStart)
         rt_prev = rt_start
-        # Add a 'stop' button
-        rt_stop = wx.Rect(rt_prev.GetRight()+delta/2, rt_prev.GetTop(), bn_width-delta, bn_height)
-        self.bn_stop = wx.Button(panel, pos=rt_stop.GetPosition(), size=rt_stop.GetSize(), 
-                                id=_ID_BTN_STOP_, label='Stop')
-        self.bn_stop.Bind(wx.EVT_BUTTON, self.OnStop)
-        rt_prev = rt_stop
+        # Add a 'pause' button
+        rt_pause = wx.Rect(rt_prev.GetRight()+delta/2, rt_prev.GetTop(), bn_width-delta, bn_height)
+        self.bn_pause = wx.Button(panel, pos=rt_pause.GetPosition(), size=rt_pause.GetSize(), 
+                                id=_ID_BTN_PAUSE_, label='Pause')
+        self.bn_pause.Bind(wx.EVT_BUTTON, self.OnPause)
+        rt_prev = rt_pause
         # Add a 'delete' button
         rt_del = wx.Rect(rt_prev.GetRight()+delta/2, rt_prev.GetTop(), bn_width, bn_height)
         self.bn_del = wx.Button(panel, pos=rt_del.GetPosition(), size=rt_del.GetSize(), 
@@ -171,6 +172,14 @@ class MainFrame(wx.Frame):
                                     id=_ID_BTN_LICENSE_, label='License')
         self.bn_license.Bind(wx.EVT_BUTTON, self.OnShowLicense)
         rt_prev = rt_license
+
+        # Add a 'Play' button
+        rt_play = wx.Rect(rt_video.GetLeft(), rt_prev.GetTop(), bn_width, bn_height)
+        self.bn_play = wx.Button(panel, pos=rt_play.GetPosition(), size=rt_play.GetSize(), 
+                                id=_ID_BTN_PLAY_, label='Play')
+        self.bn_play.Bind(wx.EVT_BUTTON, self.OnPlay)
+        rt_prev = rt_play
+
         # Add a 'exit' button
         rt_exit = wx.Rect(rt_video.GetRight()+delta/2, rt_prev.GetTop(), bn_width+delta, bn_height)
         self.bn_exit = wx.Button(panel, pos=rt_exit.GetPosition(), size=rt_exit.GetSize(), 
@@ -229,13 +238,18 @@ class MainFrame(wx.Frame):
             job_id = thread.start_new_thread(downloader.download, (url, que, self.filename, ))
             self.jobs_info[idx] = (job_id, url, que)
 
-    def OnStop(self, e):
+    def OnPause(self, e):
         lst = self.lc_dv._GetAllSelectedItems()
         for idx in lst:
-            self.jobs_info[idx][2].put(0)
+            self.jobs_info[idx][2].put(-1) 
             self.jobs_info[idx] = (-1, self.jobs_info[idx][1], Queue.Queue(0)) # A queue can be used for only once
-            self.lc_dv._UpdateItemProgress(idx, -1, 'Stopped')
+            self.lc_dv._UpdateItemProgress(idx, -1, 'Paused')
             
+    def OnPlay(self, e):
+        lst = self.lc_dv._GetAllSelectedItems()
+        for idx in lst:
+            self.jobs_info[idx][2].put(-2) 
+
     def OnExit(self, e):
         self.Close()
 
