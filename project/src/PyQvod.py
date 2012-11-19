@@ -249,8 +249,11 @@ class MainFrame(wx.Frame):
         lst = self.lc_dv._GetAllSelectedItems()
         for idx in lst:
             self.jobs_info[idx][2].put(-2) 
-
+            
     def OnExit(self, e):
+        for job_id, url, que in self.jobs_info:
+            que.put(-1)
+        time.sleep(1.5)
         self.Close()
 
     def OnOpenVideos(self, e):
