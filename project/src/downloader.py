@@ -224,8 +224,8 @@ def download(qvod_url, kill_queue = None, frename = ''):
                 subprocess.Popen(['mplayer', cache_dir + '/' + cache],
                                       stdout=subprocess.PIPE, 
                                       stderr=subprocess.PIPE)
-            return True
-
+            else: return True
+           
         # Check whether the connection is timeout
         cur_time = time.time()
         passed_time = cur_time - start_time
