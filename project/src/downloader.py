@@ -21,6 +21,7 @@ _HOME_ = os.getenv('HOME')
 _CONFIG_ = '../config'
 _EXE_ = '../bin/qvoddownloader.exe'
 _JOB_QUEUE_ = None
+_VIDEO_EXTENSION_='avi|wmv|flv|mkv|mov|mp4|mpg|vob|rmvb|rm|qmv'
 
 def read_config():
     # Check whether the configure file exists
@@ -49,7 +50,7 @@ def read_config():
         if 'PATH' in key:
             conf[key] = conf[key].replace('~', _HOME_)
             if not os.path.isdir(conf[key]):
-                ret = os.system('mkdir ' + conf[key] + ' 2> /dev/null')
+                ret = os.system('mkdir -p ' + conf[key] + ' 2> /dev/null')
                 if ret != 0:
                     report(conf[key] + '\n' + \
                            'Directory does not exist and cannot create.\n' + \
@@ -62,18 +63,18 @@ def read_config():
                 p = os.popen('ls ' + conf[key] + ' | wc -l')
                 video_number = p.readline().strip()
                 p.close()
-                p = os.popen('ls -l ' + conf[key])
+                p = os.popen('du ' + conf[key] + '| grep ' + conf[key] + '$')
                 video_disk_used = int(re.search('[0-9]+', p.readline()).group()) / 1024
                 p.close()
             else:
-                p = os.popen('ls -l ' + conf[key])
+                p = os.popen('du ' + conf[key] + '| grep ' + conf[key] + '$')
                 cache_disk_used = int(re.search('[0-9]+', p.readline()).group()) / 1024
                 p.close()
                 
         if 'RECORD' in key:
             conf[key] = conf[key].replace('~', _HOME_)
             if not os.path.isfile(conf[key]):
-                ret = os.system('touch ' + conf[key] + ' 2> /dev/null')
+                ret = os.system('mkdir -p ' + conf[key] + ' 2> /dev/null')
                 if ret != 0:
                     report(conf[key] + '\n' + \
                                'File does not exist and cannot create.\n' + \
@@ -125,7 +126,7 @@ def valid_url(qvod_url):
     qvod_valid_trunk_n = 3
     # Match the pattern: start with 'qvod://' and end with '|'
     # Before the last '|', a suffix should be a video type
-    res = re.match('qvod://.+\|.*\.(avi|wmv|flv|mkv|mov|mp4|mpg|vob|rm|rmvb)\|$',  
+    res = re.match('qvod://.+\|.*\.(%s)\|$' % _VIDEO_EXTENSION_,  
                    qvod_url, 
                    re.IGNORECASE) 
     # Remove the empty runk between two '|' 
@@ -163,10 +164,11 @@ def download(qvod_url, kill_queue = None, frename = ''):
     conf = read_config()
     if not conf: return False
     
-    video_path, cache_path, timeout, record_path = \
+    video_path, cache_path, timeout, record_dir = \
         [conf['VIDEO_PATH'], conf['CACHE_PATH'], conf['TIMEOUT'], conf['RECORD']]
+
     ## Write the valid URL into record file
-    with open(record_path, "a") as record:
+    with open(record_dir + "/" + re.sub('(%s)$' % _VIDEO_EXTENSION_, 'txt', frename), "a") as record:
         record.write(qvod_url+"\n")
     record.close()
 
@@ -175,7 +177,7 @@ def download(qvod_url, kill_queue = None, frename = ''):
     ## This may not be true! Sometimes the movie id is given in this field
     ## movie_length = int(re.search('[0-9]+$', movie_length).group())
     movie_length = -1
-    suffix = re.search('avi|wmv|flv|mkv|mov|mp4|mpg|vob|rmvb|rm', movie, re.IGNORECASE).group()
+    suffix = re.search(_VIDEO_EXTENSION_, movie, re.IGNORECASE).group()
     # Initialize the cache directory
     if frename == '': 
         frename = movie.replace('.' + suffix, '')
@@ -186,7 +188,7 @@ def download(qvod_url, kill_queue = None, frename = ''):
     cache_dir = cache_path + '/' + frename
     
     if not os.path.isdir(donotescapespace(cache_dir)):
-        ret = os.system('mkdir ' + cache_dir + ' 2> /dev/null')
+        ret = os.system('mkdir -p ' + cache_dir + ' 2> /dev/null')
         if ret != 0:
             report(cache_dir + '\n' + \
                    'Permission denied for this cache directory.\n', 0)
@@ -229,10 +231,10 @@ def download(qvod_url, kill_queue = None, frename = ''):
         # Check whether the connection is timeout
         cur_time = time.time()
         passed_time = cur_time - start_time
-        if cur_time - last_update >= timeout:
-            p_downloader.terminate()
-            b_succeed = False
-            break
+        # if cur_time - last_update >= timeout:
+        #     p_downloader.terminate()
+        #     b_succeed = False
+        #     break
 
         # Not started yet
         if not os.path.isfile(donotescapespace(cache_dir + '/' + cache)) \

@@ -20,10 +20,11 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         self.url, = [l.replace('data=', 'qvod://') for l in self.data.split('\n') if l.startswith('data=')]
         self.status = 'invalid'
+        print self.url
         if valid_url(self.url):
             self.status = 'ok'
-        elif self.url in _added_urls_:
-            self.status = 'have'
+        else: return
+        
         # just send back a HTTP header to tell the javascript the status
         self.response = 'HTTP/1.0 200 OK\r\n' + \
                         'Server: OneFile 1.0\r\n' + \

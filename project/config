@@ -7,5 +7,6 @@ VIDEO_PATH:/aux/qvod_media
 # The cache path used when downloading, r+w
 CACHE_PATH:~/qvodcache
 # If nothing is downloaded during this time period (seconds) after start, it's TIMEOUT
-TIMEOUT:600
-
+TIMEOUT:300
+# All the Qvod URLs will be stored into this directory by their filenames for further reuse
+RECORD:/aux/qvod_media/qvod_urls
