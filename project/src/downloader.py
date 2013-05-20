@@ -92,7 +92,7 @@ def read_config():
     # Check whether the download exe is in the right position
     if not os.path.isfile(_EXE_):
         report('EXE =' + _EXE_ + '\n' + \
-               'Cannot find downloader executable in "bin".', 0)
+               'Cannot find downloader exein "bin".', 0)
         report('Not Started', thread.get_ident())
         return False
 
