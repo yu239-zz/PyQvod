@@ -18,14 +18,15 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
-        self.url, = [l.replace('data=', 'qvod://') for l in self.data.split('\n') if l.startswith('data=')]
+        self.url = [l for l in self.data.split('\n') if l.startswith('qvod:')][0]
         self.status = 'invalid'
         print self.url
         if valid_url(self.url):
             self.status = 'ok'
-        else: return
+        else:
+            return
         
-        # just send back a HTTP header to tell the javascript the status
+        # send back a HTTP header to tell the javascript the status
         self.response = 'HTTP/1.0 200 OK\r\n' + \
                         'Server: OneFile 1.0\r\n' + \
                         'Content-length: ' + str(len(self.status)) + '\r\n' + \
