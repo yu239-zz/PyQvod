@@ -1,6 +1,6 @@
 {
   "name": "QvodUrlFinder",
-  "version": "0.4.1",
+  "manifest_version": 2,
   "description": "QvodUrlFinder",
   "permissions": [
 	"http://*/*",
