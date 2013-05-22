@@ -1,7 +1,7 @@
 INTRODUCTION:
 -------------
 
-PyQvod_v0.5 is a python wrapper for Qvod (in windows) + wine, inspired by a java version here:
+PyQvod is a python wrapper for Qvod (in windows) + wine, inspired by a java version here:
 
 http://www.ubuntusoft.com/qvod-download-for-linux.html
 
