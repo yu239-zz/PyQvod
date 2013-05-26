@@ -1,11 +1,9 @@
 INTRODUCTION:
 -------------
 
-PyQvod is a python wrapper for Qvod (in windows) + wine, inspired by a java version here:
+PyQvod is a python wrapper for Qvod (in windows) + wine.
 
-http://www.ubuntusoft.com/qvod-download-for-linux.html
-
-You can easily download a video with a valid Qvod URL from the Internet.
+You can use PyQvod to easily download a video with a valid Qvod URL from the Internet.
  
 INSTALLATION:
 -------------
@@ -25,10 +23,6 @@ Also you need a browser plugin to capture the Qvod URL inside a webpage after yo
 - For firefox users, simply drag the .xpi file onto the browser to install.
 
 - For chromium users, click on the 'customize' icon on the upper-right, then choose 'tools->extensions->Load unpacked extension', select the whole directory 'qvodurlfinder_chromium'. Done.
-
-These two plubins are downloaded and modified from this link:
-
-http://code.google.com/p/debbuilder-cn/downloads/list
 
 
 RUN:
@@ -72,4 +66,4 @@ or generally a DWYW (do whatever you want) license.
 
 Any bug, read the code and try fo fix it first. Or you can leave me a message :).
 
-Last update date: 05/19/2013
+Last update date: 05/26/2013
