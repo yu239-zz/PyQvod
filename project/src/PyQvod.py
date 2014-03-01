@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """ 
     PyQvod_v0.5: a python wrapper for Qvod downloader + wine 
